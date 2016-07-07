@@ -152,6 +152,7 @@ class BaseForms
 
 		$attr = 'placeholder="'.ucfirst($display_name).'"';
 		$attr .= 'value="'.$initial_val.'"';
+		$attr .= 'name="'.$args_key.'"';
 
 		$tag = "<p>";
 		$tag .= "<span>".ucfirst($display_name).": </span>";
@@ -170,7 +171,7 @@ class BaseForms
 
 		$attr = 'placeholder="'.ucfirst($display_name).'"';
 		$attr .= 'value="'.$initial_val.'"';
-
+		$attr .= 'name="'.$args_key.'"';
 		$tag = "<p>";
 		$tag .= "<span>".ucfirst($display_name).": </span>";
 		$tag .= "<input type='date' ".$attr."></p>";
@@ -182,6 +183,8 @@ class BaseForms
 		$attr= '';
 		$args_key = array_keys($args)[0];
 		$args_values = array_values($args)[0];
+
+		$attr .= 'name="'.$args_key.'"';
 
 		$display_name = $args_key;
 		if(array_key_exists('verbose', $args_values)){
