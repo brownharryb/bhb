@@ -8,8 +8,8 @@ class BaseForms
 	private $req_info="";
 	protected $excluded_columns = array('id');
 	private $function_map=array(
-		'boolean'=>['func'=>'get_boolean_tag','validate'=>'validate_boolean'],
-		'longtext'=>['func'=>'get_longtext_tag','validate'=>'validate_longtext'],
+		'checkbox'=>['func'=>'get_boolean_tag','validate'=>'validate_boolean'],
+		'textarea'=>['func'=>'get_longtext_tag','validate'=>'validate_longtext'],
 		'int'=>['func'=>'get_int_tag','validate'=>'validate_int'],
 		'text'=>['func'=>'get_varchar_tag','validate'=>'validate_varchar'],
 		'email'=>['func'=>'get_email_tag','validate'=>'validate_email'],
@@ -47,7 +47,7 @@ class BaseForms
 		return $form;
 	}
 
-
+// *********************************BUILD FORMS FROM FUNCTIONS********************************
 	function get_form($model_data=''){
 		$returned_form = $this->set_csrf_token();
 		$initial_val = '';
@@ -75,6 +75,28 @@ class BaseForms
 			return $returned_form;
 		}
 	}
+
+// **************************************VALIDATE A BOUND FORM********************************
+	function is_valid($form,$post_data){
+		if(!array_key_exists('csrf_token', $post_data) || $_SESSION['session_token'] != $post_data['csrf_token']){
+			$form =  $this->add_error_to_form($form,'Invalid session try again!!');
+		}else{
+			$form = $this->validate_all($form,$post_data);
+		}
+		return $form;
+	}
+
+	function validate_all($form,$post_data){
+		// FINISH THIS
+		print_r($this->model->get_columns_exec());
+		return $form;
+	}
+
+	function add_error_to_form($form,$error_msg){
+		$form .= '<p style="color:red;font-size:11px;">'.$error_msg.'</p>';
+		return $form;
+	}
+
 // *************************************** INT*****************************************
 // ******TAG*******
 	function get_int_tag($args,$initial_val=''){		

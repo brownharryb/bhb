@@ -136,8 +136,9 @@ class View extends \BaseViews{
 			}else{
 				$form_class->set_model($model);
 				$form = $form_class->get_form();
-				if($post_data!=[]){
-					echo 'bound';
+				if($post_data!=[]){  //form is bound
+					// check valid form
+					$form = $form_class->is_valid($form,$post_data);
 				}
 				return array('admin_path'=>$admin_path,'model'=>$model,'form'=>$form);
 			}
@@ -158,9 +159,6 @@ class View extends \BaseViews{
 
 	function siteModelsEdit($matches){
 		$form_class = new BaseForms;
-		print_r($_POST);
-		
-
 
 		try{
 			$site_model = $matches['site_model'][0];
