@@ -17,8 +17,8 @@ class UserModel extends BaseModels{
 		'lastname'=>
 		array('sql'=>'varchar(255)','max_length'=>25,'form_type'=>'text','validation'=>'lastname_validation'),
 
-		'email'=>
-		array('sql'=>'varchar(255)','max_length'=>255,'form_type'=>'email','validation'=>'email_validation'),
+		// 'email'=>
+		// array('sql'=>'varchar(255)','max_length'=>255,'form_type'=>'email','validation'=>'email_validation'),
 
 		'created'=>
 		array('sql'=>'datetime','max_length'=>25,'form_type'=>'date','verbose'=>'Date Created','validation'=>'date_created_validation')
@@ -27,6 +27,30 @@ class UserModel extends BaseModels{
 
 	function __construct(){
 		parent::__construct();
+	}
+
+
+	function get_column_exec(){
+		return $this->columns_exec;
+	}
+
+	function username_validation($username){
+		return $username;
+	}
+	function password_validation($username){
+		return $username;
+	}
+	function firstname_validation($username){
+		return $username;
+	}
+	function lastname_validation($username){
+		return $username;
+	}
+	function email_validation($username){
+		return $username;
+	}
+	function date_created_validation($username){
+		return $username;
 	}	
 	
 }

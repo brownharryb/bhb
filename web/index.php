@@ -12,11 +12,11 @@ $user = $_SESSION['user'];
 
 require 'all_apps.php';
 require 'base_urls.php';
-require 'base_views.php';
 require 'base_forms.php';
 require 'urls.php';
 require 'db_helper.php';
 require 'settings.php';
+require 'base_views.php';
 require 'base_models.php';
 if(!isset($_SESSION['session_token'])){
 	$_SESSION['session_token']=genetrate_secret_token(20);

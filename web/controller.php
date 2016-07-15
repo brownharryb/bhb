@@ -23,7 +23,8 @@ class Controller{
 	}
 
 	function link_url_to_function(){
-			require_once $this->app_name.'/'.$this->page_name;
+			require_once $this->app_name.'/views/'.$this->page_name;
+
 			$f_name = $this->function_name;
 			$c = new $this->class_name($function_to_call=$f_name,$matches=$this->matches);
 			

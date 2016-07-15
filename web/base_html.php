@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title><?php echo $page_title;?></title>
+	<title><?php echo $globs['page_title'];?></title>
 	<link rel="stylesheet" type="text/css" href="<?php echo get_static_url();?>css/main_style.css">
 	<!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"> -->
 	<?php if(isset($globs['extra_css'])){echo $globs['extra_css'];}?>
