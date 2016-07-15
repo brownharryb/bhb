@@ -30,48 +30,72 @@ class BaseForms
 
 
 
-	function get_form($model_data='',$form_error_msg='',$tag_error_msgs=array()){
-		$returned_form = $this->set_csrf_token();
-		$initial_val = '';
-		if($this->req_info!=''){
-			// this checks if data is available for editing
-			if($model_data!='' && $model_data[0]['id']>0){
-				$returned_form .= $this->get_id_form_for_edit($model_data[0]['id']);
-			}
+	// function get_form($model_data='',$form_error_msg='',$tag_error_msgs=array()){
+	// 	$returned_form = $this->set_csrf_token();
+	// 	$initial_val = '';
+	// 	if($this->req_info!=''){
+	// 		// this checks if data is available for editing
+	// 		if($model_data!='' && $model_data[0]['id']>0){
+	// 			$returned_form .= $this->get_id_form_for_edit($model_data[0]['id']);
+	// 		}
 			
-			foreach ($this->req_info as $req_info_key => $req_info_value) {
-				if(!array_key_exists('form_type', $req_info_value)){continue;}
-				foreach ($this->function_map as $map_key => $map_value) {
-					$initial_val = '';
-					if($req_info_value['form_type']==$map_key){
-						if($model_data!=''){							
-							if(array_key_exists($req_info_key, $model_data[0])){
-								$initial_val = $model_data[0][$req_info_key];
-							}
-						}
-						$functn = $map_value['func'];
-						if (array_key_exists($req_info_key, $tag_error_msgs)) {
-							$returned_form.=$this->$functn(array($req_info_key=>$req_info_value),$initial_val,$tag_error_msgs[$req_info_key]);
-						}else{
-							$returned_form.=$this->$functn(array($req_info_key=>$req_info_value),$initial_val);
-						}
-						break;
-					}
-				}
-			}
-			return $returned_form;
-		}
-	}
+	// 		foreach ($this->req_info as $req_info_key => $req_info_value) {
+	// 			if(!array_key_exists('form_type', $req_info_value)){continue;}
+	// 			foreach ($this->function_map as $map_key => $map_value) {
+	// 				$initial_val = '';
+	// 				if($req_info_value['form_type']==$map_key){
+	// 					if($model_data!=''){							
+	// 						if(array_key_exists($req_info_key, $model_data[0])){
+	// 							$initial_val = $model_data[0][$req_info_key];
+	// 						}
+	// 					}
+	// 					$functn = $map_value['func'];
+	// 					if (array_key_exists($req_info_key, $tag_error_msgs)) {
+	// 						$returned_form.=$this->$functn(array($req_info_key=>$req_info_value),$initial_val,$tag_error_msgs[$req_info_key]);
+	// 					}else{
+	// 						$returned_form.=$this->$functn(array($req_info_key=>$req_info_value),$initial_val);
+	// 					}
+	// 					break;
+	// 				}
+	// 			}
+	// 		}
+	// 		return $returned_form;
+	// 	}
+	// }
 
-	function get_bound_form(){
-
-	}
-
-	function get_model_form($model,$model_data="",$data_error_array=""){
+	function get_bound_form($model, $data_error_array){
+		print_r($data_error_array);
 		$function_map = $this->get_function_map();
 		$returned_form = $this->set_csrf_token();
 		$model_form_info = $model->get_columns_exec();
-		
+
+		foreach ($model_form_info as $model_form_info_key => $model_form_info_value) {
+			if(array_key_exists("form_type", $model_form_info_value)){
+				foreach ($function_map as $function_map_key => $function_map_value) {
+					if($model_form_info_value['form_type'] == $function_map_key){
+						$tag_function = $function_map_value['func'];
+						foreach ($data_error_array as $data_error_array_key => $data_error_array_value) {
+							if($data_error_array_value['form_key']==$model_form_info_key){
+								$returned_form .= $this->$tag_function([$model_form_info_key=>$model_form_info_value],$data_error_array_value['form_val'],$data_error_array_value['error_msg']);
+
+							}						
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+		return $returned_form;
+
+	}
+
+	function get_model_form($model,$model_data=""){
+		$function_map = $this->get_function_map();
+		$returned_form = $this->set_csrf_token();
+		$model_form_info = $model->get_columns_exec();
 
 
 		// this checks if data is available for editing
@@ -81,31 +105,15 @@ class BaseForms
 
 
 		foreach ($model_form_info as $model_form_info_key => $model_form_info_value) {
-			$keyerr = false;
 			if(array_key_exists("form_type", $model_form_info_value)){
 				foreach ($function_map as $function_map_key => $function_map_value) {
 					if($model_form_info_value['form_type'] == $function_map_key){
 						$tag_function = $function_map_value['func'];
-
-						if($data_error_array !=""){
-							foreach ($data_error_array as $data_error_array_key => $data_error_array_value) {
-
-								if($data_error_array_value['form_key']==$model_form_info_key && $keyerr == false){
-									$keyerr = true;
-									$returned_form .= $this->$tag_function([$model_form_info_key=>$model_form_info_value],$data_error_array_value['form_val'],$data_error_array_value['error_msg']);
-									
-								}
-
-							}
-						}
-						if(!$keyerr){
-							if($model_data==""){
-								$returned_form.=$this->$tag_function([$model_form_info_key=>$model_form_info_value]);
-							}elseif(array_key_exists($model_form_info_key, $model_data[0])){
-								$returned_form.=$this->$tag_function([$model_form_info_key=>$model_form_info_value],$model_data[0][$model_form_info_key]);
-							}
-						}
-						
+						if($model_data==""){
+							$returned_form.=$this->$tag_function([$model_form_info_key=>$model_form_info_value]);
+						}elseif(array_key_exists($model_form_info_key, $model_data[0])){
+							$returned_form.=$this->$tag_function([$model_form_info_key=>$model_form_info_value],$model_data[0][$model_form_info_key]);
+						}												
 					}
 				}
 			}
@@ -130,8 +138,9 @@ class BaseForms
 			$form =  $this->add_error_to_form($form,'Invalid session try again!!');
 		}else{
 			$form = $this->validate_all($form,$post_data);
+
 		}
-		return array('form'=>$form,'form_status'=>$form_ok);
+		return $form;
 	}
 
 	function validate_all($form,$post_data){
@@ -148,22 +157,18 @@ class BaseForms
 		$column_exec = $model->get_column_exec();
 		$function_map = $this->get_function_map();
 		$data_error_array = array();
+		$error_available = false;
 
 		foreach ($post_data as $post_data_key => $post_data_value) {
-			// print_r($post_data);
 			foreach ($column_exec as $column_exec_key => $column_exec_value) {
-
-				if($post_data_key == $column_exec_key){
+				$error_msg='';
+				if($post_data_key==$column_exec_key){
 
 					// validates from specified model validation function
 					if (array_key_exists("validation", $column_exec_value)) {
 						$validation_model_func = $column_exec_value['validation'];
 						$error_msg = $model->$validation_model_func($post_data_value);
-
-					}
-					if ($error_msg !='') {
-						$data_error_array[] = array('form_key'=>$post_data_key, 'form_val'=>$post_data_value,'error_msg'=>$error_msg);
-						$error_msg ='';
+						
 					}
 
 					// validates from specified tag validation function
@@ -172,27 +177,32 @@ class BaseForms
 							if($column_exec_value['form_type']==$function_map_key){
 								$validation_form_func = $function_map_value['validation'];
 								$error_msg = $this->$validation_form_func($post_data_value);
-
+								
 							}
 						}
 					}
-					if ($error_msg !='') {
-						$data_error_array[] = array('form_key'=>$post_data_key, 'form_val'=>$post_data_value,'error_msg'=>$error_msg);
-						$error_msg ='';
+					if($error_msg!=""){
+						$error_available=true;						
 					}
+					$data_error_array[] = array('form_key'=>$post_data_key, 'form_val'=>$post_data_value,'error_msg'=>$error_msg);
+
 				}
+
+
+
 			}
+			
 		}
-		if($data_error_array != array()){
-			$form = $this->get_model_form($model,"",$data_error_array);
+
+		if($error_available){
+			$form = $this->get_bound_form($model,$data_error_array);
 		}else{
-			$this->valid_post_data = $post_data;
-			$form = "";
+			$form="";
 		}
 
-		return $form;	
-
+		return $form;
 	}
+
 
 	function get_valid_post_data(){
 		return $this->valid_post_data;

@@ -23,7 +23,7 @@ class AdminEditForm extends \BaseForms
 		
 	}
 
-	function get_admin_form($model_data='',$form_error_msg='',$tag_error_msgs=array()){
+	function get_admin_form($model_data){
 		return $this->get_model_form($this->model,$model_data);
 	}
 }

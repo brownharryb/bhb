@@ -35,22 +35,22 @@ class UserModel extends BaseModels{
 	}
 
 	function username_validation($username){
-		return $username;
+		
 	}
 	function password_validation($username){
-		return $username;
+		
 	}
 	function firstname_validation($username){
-		return $username;
+		
 	}
 	function lastname_validation($username){
-		return $username;
+		
 	}
 	function email_validation($username){
-		return $username;
+		
 	}
 	function date_created_validation($username){
-		return $username;
+		
 	}	
 	
 }

@@ -37,15 +37,12 @@ class AdminAddModels extends \AdminView
 				$form = $form_class->get_admin_form();
 				if($post_data!=[]){  //form is bound
 					// check valid form
-					$form_and_status_array= $form_class->validate_admin_data_on_form($form,$post_data);
-					if($form_and_status_array["form_status"]){
-						$this->addDataToDatabase($post_data);
+					$form= $form_class->validate_admin_data_on_form($form,$post_data);
+					if($form==""){//form is valid
+						$this->addDataToDatabase($form_class->get_valid_post_data());
 						return;
-					}else{
-						$form = $form_and_status_array["form"];
 					}
-
-				}
+				}				
 
 				$globs = array('admin_path'=>$admin_path,'model'=>$model,'form'=>$form);
 			}
