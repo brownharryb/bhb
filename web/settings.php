@@ -66,6 +66,10 @@ function get_templates_directory($app_name){
 	return getcwd().'/'.$app_name.'/templates/';
 }
 
+function get_forms_directory($app_name){
+	return getcwd().'/'.$app_name.'/forms/';
+}
+
 function get_models_directory($app_name){
 	return getcwd().'/'.$app_name.'/models/';
 }

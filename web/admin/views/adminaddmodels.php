@@ -55,6 +55,7 @@ class AdminAddModels extends \AdminView
 
 
 	function addDataToDatabase($post_data){
+		echo "TODO FORM DATA TO BE ADDED TO DB";
 
 	}
 

@@ -16,9 +16,6 @@ class AdminAddForm extends \BaseForms
 
 	function set_model($model){
 		$this->model = $model;
-		if($model->get_columns_exec()!=''){
-			$this->req_info =  $model->get_columns_exec();
-		}
 	}
 
 	function set_id_for_edit($form,$id){
@@ -27,8 +24,7 @@ class AdminAddForm extends \BaseForms
 	}
 
 
-	function get_admin_form($model_data='',$form_error_msg='',$tag_error_msgs=array()){
-		// return $this->get_form($model_data,$form_error_msg,$tag_error_msgs);
+	function get_admin_form(){
 		return $this->get_model_form($this->model);
 	}
 }

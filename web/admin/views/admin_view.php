@@ -2,7 +2,7 @@
 /**
 * 
 */
-class AdminView extends \BaseViews{
+class AdminView{
 
 	protected $app_name = "admin";
 	protected $admin_models;
@@ -11,8 +11,7 @@ class AdminView extends \BaseViews{
 
 	
 	function __construct($function_to_call=''){
-
-		parent::__construct();
+		
 		$this->admin_models = $this->get_all_admin_registered_models();
 		if($this->check_admin_loggedin()){
 

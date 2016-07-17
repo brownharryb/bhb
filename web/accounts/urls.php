@@ -15,7 +15,7 @@ class SubUrl extends \BaseUrls{
 
 	function get_sub_urls(){
 		$return_val = array(
-		array("path"=>"^".$this->first_param."login/$","controller"=>"accounts_View_login","named_url"=>"login_page")
+		array("path"=>"^".$this->first_param."login$","controller"=>"accounts_AccountsLoginView_login","named_url"=>"login_page")
 		);
 		return $return_val;
 	}

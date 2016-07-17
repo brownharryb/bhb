@@ -7,7 +7,7 @@ class BaseForms
 	private $model_id = 0;
 	protected $req_info="";
 	protected $excluded_columns = array('id');
-	protected $function_map=array(
+	protected $main_function_map=array(
 		'checkbox'=>['func'=>'get_boolean_tag','validation'=>'validate_boolean_tag'],
 		'textarea'=>['func'=>'get_longtext_tag','validation'=>'validate_longtext_tag'],
 		'int'=>['func'=>'get_int_tag','validation'=>'validate_int_tag'],
@@ -16,11 +16,11 @@ class BaseForms
 		'password'=>['func'=>'get_password_tag','validation'=>'validate_password_tag'],
 		'date'=>['func'=>'get_date_time_tag','validation'=>'validate_date_time_tag']	
 		);
-	protected $form_function_map=[];
+	protected $function_map=[];
 	protected $valid_post_data = array();
 	function __construct()
 	{
-		$this->function_map = array_merge($this->function_map,$this->form_function_map);
+		$this->function_map = array_merge($this->function_map,$this->main_function_map);
 		
 	}
 
@@ -28,65 +28,30 @@ class BaseForms
 		return $this->function_map;
 	}
 
+	function set_csrf_token(){
+		$csrf = $_SESSION['session_token'];
+		return '<input type="hidden" value="'.$csrf.'" name="csrf_token">';
+	}
 
 
-	// function get_form($model_data='',$form_error_msg='',$tag_error_msgs=array()){
-	// 	$returned_form = $this->set_csrf_token();
-	// 	$initial_val = '';
-	// 	if($this->req_info!=''){
-	// 		// this checks if data is available for editing
-	// 		if($model_data!='' && $model_data[0]['id']>0){
-	// 			$returned_form .= $this->get_id_form_for_edit($model_data[0]['id']);
-	// 		}
-			
-	// 		foreach ($this->req_info as $req_info_key => $req_info_value) {
-	// 			if(!array_key_exists('form_type', $req_info_value)){continue;}
-	// 			foreach ($this->function_map as $map_key => $map_value) {
-	// 				$initial_val = '';
-	// 				if($req_info_value['form_type']==$map_key){
-	// 					if($model_data!=''){							
-	// 						if(array_key_exists($req_info_key, $model_data[0])){
-	// 							$initial_val = $model_data[0][$req_info_key];
-	// 						}
-	// 					}
-	// 					$functn = $map_value['func'];
-	// 					if (array_key_exists($req_info_key, $tag_error_msgs)) {
-	// 						$returned_form.=$this->$functn(array($req_info_key=>$req_info_value),$initial_val,$tag_error_msgs[$req_info_key]);
-	// 					}else{
-	// 						$returned_form.=$this->$functn(array($req_info_key=>$req_info_value),$initial_val);
-	// 					}
-	// 					break;
-	// 				}
-	// 			}
-	// 		}
-	// 		return $returned_form;
-	// 	}
-	// }
-
-	function get_bound_form($model, $data_error_array){
-		print_r($data_error_array);
+	function get_bound_model_form($model, $data_error_array){
 		$function_map = $this->get_function_map();
 		$returned_form = $this->set_csrf_token();
 		$model_form_info = $model->get_columns_exec();
 
-		foreach ($model_form_info as $model_form_info_key => $model_form_info_value) {
+		foreach ($model_form_info as $model_form_info_key => $model_form_info_value){
 			if(array_key_exists("form_type", $model_form_info_value)){
-				foreach ($function_map as $function_map_key => $function_map_value) {
+				foreach ($function_map as $function_map_key => $function_map_value){
 					if($model_form_info_value['form_type'] == $function_map_key){
 						$tag_function = $function_map_value['func'];
 						foreach ($data_error_array as $data_error_array_key => $data_error_array_value) {
 							if($data_error_array_value['form_key']==$model_form_info_key){
 								$returned_form .= $this->$tag_function([$model_form_info_key=>$model_form_info_value],$data_error_array_value['form_val'],$data_error_array_value['error_msg']);
-
 							}						
 						}
-
 					}
-
 				}
-
 			}
-
 		}
 		return $returned_form;
 
@@ -124,11 +89,45 @@ class BaseForms
 
 
 
-	function set_csrf_token(){
-		$csrf = $_SESSION['session_token'];
-		return '<input type="hidden" value="'.$csrf.'" name="csrf_token">';
+
+
+
+
+
+	// $form_fields = array(
+	// 		'username'=>['form_type'=>'text','display_name'=>'Username','validation'=>'username_validation'],
+	// 		'password'=>['form_type'=>'password','display_name'=>'Password','validation'=>'password_validation'],
+	// 	);
+
+	function get_fields_form(){
+		$function_map = $this->get_function_map();
+		$returned_form = $this->set_csrf_token();
+		if(isset($this->form_fields)){
+			$form_fields = $this->form_fields;
+		}else{
+			throw new Exception("Form fields not forund in class!!", 1);
+			return;			
+		}
+
+		foreach ($form_fields as $form_fields_key => $form_fields_value) {
+			if(array_key_exists('form_type', $form_fields_value)){
+				foreach ($function_map as $function_map_key => $function_map_value) {
+					if($form_fields_value['form_type'] == $function_map_key){
+						$tag_function = $function_map_value['func'];
+						$returned_form.= $this->$tag_function([$form_fields_key=>$form_fields_value]);
+					}
+				}
+
+			}
+		}
+
+		return $returned_form;
+
 	}
 
+
+
+	
 
 
 // **************************************VALIDATE A BOUND ADMIN FORM********************************
@@ -138,7 +137,6 @@ class BaseForms
 			$form =  $this->add_error_to_form($form,'Invalid session try again!!');
 		}else{
 			$form = $this->validate_all($form,$post_data);
-
 		}
 		return $form;
 	}
@@ -185,36 +183,33 @@ class BaseForms
 						$error_available=true;						
 					}
 					$data_error_array[] = array('form_key'=>$post_data_key, 'form_val'=>$post_data_value,'error_msg'=>$error_msg);
-
 				}
-
-
-
 			}
 			
 		}
 
 		if($error_available){
-			$form = $this->get_bound_form($model,$data_error_array);
+			$form = $this->get_bound_model_form($model,$data_error_array);
 		}else{
 			$form="";
 		}
-
 		return $form;
-	}
+		}	
 
+// FORM FIELD VALIDATION (IF SET)********************************
+	function form_field_validation($form,$post_data,$form_fields){
+		$error_msg = '';
+		$column_exec = $model->get_column_exec();
+		$function_map = $this->get_function_map();
+		$data_error_array = array();
+		$error_available = false;
+
+	}
+// *********************
 
 	function get_valid_post_data(){
 		return $this->valid_post_data;
 	}
-
-// FORM FIELD VALIDATION (IF SET)********************************
-	function form_field_validation($form,$post_data,$form_fields){
-
-	}
-
-
-// *********************
 
 	function add_error_to_tag($tag,$error_msg){
 		$tag .= '<span class="form_tag_error">'.$error_msg.'</span>';
@@ -291,8 +286,6 @@ class BaseForms
 	}
 // ********VALIDATION********
 	function validate_varchar_tag($data){
-		$aValid = array('-', '_');
-
 		if(!ctype_alnum($data)){
 			return "Only numbers and letters allowed!";
 		} 
