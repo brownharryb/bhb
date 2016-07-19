@@ -14,7 +14,6 @@ class AdminView{
 		
 		$this->admin_models = $this->get_all_admin_registered_models();
 		if($this->check_admin_loggedin()){
-
 			$this->$function_to_call();
 		}
 	}

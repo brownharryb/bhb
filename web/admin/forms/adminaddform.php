@@ -8,14 +8,10 @@ class AdminAddForm extends \BaseForms
 	protected $form_fields = array(
 		);
 	
-	function __construct()
+	function __construct($model)
 	{
-		parent::__construct();
-
-	}
-
-	function set_model($model){
 		$this->model = $model;
+		parent::__construct();
 	}
 
 	function set_id_for_edit($form,$id){

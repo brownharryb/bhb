@@ -16,7 +16,7 @@ class AdminEditModels extends \AdminView
 	}
 
 	function modelsEdit(){
-		require_once __DIR__.'/../forms/admineditform.php';
+		require_once get_forms_directory("admin").'admineditform.php';
 		$form_class = new AdminEditForm;
 
 		try{

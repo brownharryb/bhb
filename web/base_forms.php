@@ -1,20 +1,20 @@
 <?php 
 
+// TODO WRITE CODE TO VALIDATE EACH TAG
 
 class BaseForms
 {
-	protected $model = '';
 	private $model_id = 0;
-	protected $req_info="";
-	protected $excluded_columns = array('id');
+	protected $form_html="";
+	// protected $req_info="";
 	protected $main_function_map=array(
-		'checkbox'=>['func'=>'get_boolean_tag','validation'=>'validate_boolean_tag'],
-		'textarea'=>['func'=>'get_longtext_tag','validation'=>'validate_longtext_tag'],
-		'int'=>['func'=>'get_int_tag','validation'=>'validate_int_tag'],
-		'text'=>['func'=>'get_varchar_tag','validation'=>'validate_varchar_tag'],
-		'email'=>['func'=>'get_email_tag','validation'=>'validate_email_tag'],
-		'password'=>['func'=>'get_password_tag','validation'=>'validate_password_tag'],
-		'date'=>['func'=>'get_date_time_tag','validation'=>'validate_date_time_tag']	
+		'checkbox'=>['func'=>'get_boolean_tag','validation'=>['validate_boolean_tag']],
+		'textarea'=>['func'=>'get_longtext_tag','validation'=>['validate_longtext_tag']],
+		'int'=>['func'=>'get_int_tag','validation'=>['validate_int_tag']],
+		'text'=>['func'=>'get_varchar_tag','validation'=>['validate_varchar_tag']],
+		'email'=>['func'=>'get_email_tag','validation'=>['validate_email_tag']],
+		'password'=>['func'=>'get_password_tag','validation'=>['validate_password_tag']],
+		'date'=>['func'=>'get_date_time_tag','validation'=>['validate_date_time_tag']]	
 		);
 	protected $function_map=[];
 	protected $valid_post_data = array();
@@ -28,33 +28,29 @@ class BaseForms
 		return $this->function_map;
 	}
 
+	function get_form_fields(){
+		if(isset($this->form_fields)){
+			return $this->form_fields;
+		}
+		else{
+			return "";
+		}
+	}
+
 	function set_csrf_token(){
 		$csrf = $_SESSION['session_token'];
 		return '<input type="hidden" value="'.$csrf.'" name="csrf_token">';
 	}
 
-
-	function get_bound_model_form($model, $data_error_array){
-		$function_map = $this->get_function_map();
-		$returned_form = $this->set_csrf_token();
-		$model_form_info = $model->get_columns_exec();
-
-		foreach ($model_form_info as $model_form_info_key => $model_form_info_value){
-			if(array_key_exists("form_type", $model_form_info_value)){
-				foreach ($function_map as $function_map_key => $function_map_value){
-					if($model_form_info_value['form_type'] == $function_map_key){
-						$tag_function = $function_map_value['func'];
-						foreach ($data_error_array as $data_error_array_key => $data_error_array_value) {
-							if($data_error_array_value['form_key']==$model_form_info_key){
-								$returned_form .= $this->$tag_function([$model_form_info_key=>$model_form_info_value],$data_error_array_value['form_val'],$data_error_array_value['error_msg']);
-							}						
-						}
-					}
-				}
-			}
+	function get_form(){
+		$form = '';
+		if(isset($this->model)){
+			$form = $this->get_model_form($this->model);
+		}elseif(isset($this->form_fields)){
+			$form = $this->get_fields_form();
 		}
-		return $returned_form;
-
+		$this->form_html= $form;
+		return $form;
 	}
 
 	function get_model_form($model,$model_data=""){
@@ -77,7 +73,7 @@ class BaseForms
 						if($model_data==""){
 							$returned_form.=$this->$tag_function([$model_form_info_key=>$model_form_info_value]);
 						}elseif(array_key_exists($model_form_info_key, $model_data[0])){
-							$returned_form.=$this->$tag_function([$model_form_info_key=>$model_form_info_value],$model_data[0][$model_form_info_key]);
+							$returned_form.=$this->$tag_function([$model_form_info_key=>$model_form_info_value],$model_data[0][$model_form_info_key]); //set initial value if present
 						}												
 					}
 				}
@@ -88,16 +84,28 @@ class BaseForms
 	}
 
 
+	function get_bound_form($attrs, $data_error_array){
+		$function_map = $this->get_function_map();
+		$returned_form = $this->set_csrf_token();
+		$model_form_info = $attrs;
 
+		foreach ($model_form_info as $model_form_info_key => $model_form_info_value){
+			if(array_key_exists("form_type", $model_form_info_value)){
+				foreach ($function_map as $function_map_key => $function_map_value){
+					if($model_form_info_value['form_type'] == $function_map_key){
+						$tag_function = $function_map_value['func'];
+						foreach ($data_error_array as $data_error_array_key => $data_error_array_value) {
+							if($data_error_array_value['form_key']==$model_form_info_key){
+								$returned_form .= $this->$tag_function([$model_form_info_key=>$model_form_info_value],$data_error_array_value['form_val'],$data_error_array_value['error_msg']);
+							}						
+						}
+					}
+				}
+			}
+		}
+		return $returned_form;
 
-
-
-
-
-	// $form_fields = array(
-	// 		'username'=>['form_type'=>'text','display_name'=>'Username','validation'=>'username_validation'],
-	// 		'password'=>['form_type'=>'password','display_name'=>'Password','validation'=>'password_validation'],
-	// 	);
+	}
 
 	function get_fields_form(){
 		$function_map = $this->get_function_map();
@@ -105,7 +113,7 @@ class BaseForms
 		if(isset($this->form_fields)){
 			$form_fields = $this->form_fields;
 		}else{
-			throw new Exception("Form fields not forund in class!!", 1);
+			throw new Exception("Form fields not found in class!!", 1);
 			return;			
 		}
 
@@ -117,67 +125,80 @@ class BaseForms
 						$returned_form.= $this->$tag_function([$form_fields_key=>$form_fields_value]);
 					}
 				}
-
 			}
 		}
-
 		return $returned_form;
-
 	}
 
-
-
-	
-
-
-// **************************************VALIDATE A BOUND ADMIN FORM********************************
-	function validate_admin_data_on_form($form,$post_data){
-		$form_ok = false;
-		if(!array_key_exists('csrf_token', $post_data) || $_SESSION['session_token'] != $post_data['csrf_token']){
-			$form =  $this->add_error_to_form($form,'Invalid session try again!!');
-		}else{
-			$form = $this->validate_all($form,$post_data);
+	function validate_form_with_form_field($form,$post_data){
+		
+	}
+// ***************************************VALIDATIONS**********************************************
+	function form_is_valid($post_data){
+		// $form_html = $this->form_html;
+		if(!$this->confirm_csrf($post_data)){
+			return;
 		}
+		if(isset($this->model)){
+			$attrs = $this->model->get_columns_exec();
+		}
+		elseif(isset($this->form_fields)){
+			$attrs = $this->get_form_fields();
+		}
+		$form = $this->form_validation($post_data,$attrs);
 		return $form;
 	}
 
-	function validate_all($form,$post_data){
-		if(!is_string($this->model)){
-			$form = $this->model_validation($form,$post_data,$this->model);
-		}		
-		// $form = $this->get_form('','',['created'=>'not a good password']);
-		return $form;
+// TAG VALIDATION******************
+	function tag_validation($data_array, $value_to_validate){
+		$error_msg = "";
+		$function_map = $this->get_function_map();
+
+		if(array_key_exists("form_type", $data_array)){
+			foreach ($function_map as $function_map_key => $function_map_value) {
+				if($data_array['form_type']==$function_map_key){
+					$validation_form_func_array = $function_map_value['validation'];
+					foreach ($validation_form_func_array as $validation_form_func) {
+						if (method_exists($this, $validation_form_func)){
+							if($error_msg==""){
+								$error_msg = $this->$validation_form_func($value_to_validate);
+							}
+						}
+					}
+				}
+			}
+		}
+		return $error_msg;
+
 	}
 
-// MODEL VALIDATION (IF SET)*********
-	function model_validation($form,$post_data,$model){
+	function form_validation($post_data,$attrs){
 		$error_msg = '';
-		$column_exec = $model->get_column_exec();
+		if(isset($this->model)){
+			$f_class = $this->model;
+		}elseif(isset($this->form_fields)){
+			$f_class = $this;
+		}
 		$function_map = $this->get_function_map();
 		$data_error_array = array();
 		$error_available = false;
 
 		foreach ($post_data as $post_data_key => $post_data_value) {
-			foreach ($column_exec as $column_exec_key => $column_exec_value) {
+			foreach ($attrs as $attrs_key => $attrs_value) {
 				$error_msg='';
-				if($post_data_key==$column_exec_key){
+				if($post_data_key==$attrs_key){
 
-					// validates from specified model validation function
-					if (array_key_exists("validation", $column_exec_value)) {
-						$validation_model_func = $column_exec_value['validation'];
-						$error_msg = $model->$validation_model_func($post_data_value);
-						
+					// validates from specified class validation function
+					if (array_key_exists("validation", $attrs_value)) {
+						$validation_func_array = $attrs_value['validation'];
+						foreach ($validation_func_array as $validation_func) {						
+							$error_msg = $f_class->$validation_func($post_data_value);
+						}						
 					}
 
 					// validates from specified tag validation function
-					if(array_key_exists("form_type", $column_exec_value)){
-						foreach ($function_map as $function_map_key => $function_map_value) {
-							if($column_exec_value['form_type']==$function_map_key){
-								$validation_form_func = $function_map_value['validation'];
-								$error_msg = $this->$validation_form_func($post_data_value);
-								
-							}
-						}
+					if($error_msg==""){
+						$error_msg = $this->tag_validation($attrs_value,$post_data_value);
 					}
 					if($error_msg!=""){
 						$error_available=true;						
@@ -189,23 +210,47 @@ class BaseForms
 		}
 
 		if($error_available){
-			$form = $this->get_bound_model_form($model,$data_error_array);
-		}else{
 			$form="";
+			$form = $this->get_bound_form($attrs,$data_error_array);
+		}else{
+			$form="ok";
 		}
 		return $form;
-		}	
+	}
 
-// FORM FIELD VALIDATION (IF SET)********************************
-	function form_field_validation($form,$post_data,$form_fields){
+	// FORM FIELD VALIDATION (IF SET)********************************
+	function form_field_validation($post_data){
 		$error_msg = '';
-		$column_exec = $model->get_column_exec();
 		$function_map = $this->get_function_map();
+		$form_fields = $this->form_fields;
 		$data_error_array = array();
 		$error_available = false;
 
+		foreach ($post_data as $post_data_key => $post_data_value) {
+			foreach ($form_fields as $form_fields_key => $form_fields_value) {
+				if($post_data_key == $form_fields_key){
+
+				}
+			}			
+		}
+
+	}	
+
+// **************************************VALIDATE A BOUND ADMIN FORM********************************
+	function validate_admin_data_on_form($post_data){
+		if($this->confirm_csrf($post_data)){
+			$form = $this->form_is_valid($post_data);
+			return $form;
+		}
 	}
-// *********************
+
+	function confirm_csrf($post_data){
+		if(!array_key_exists('csrf_token', $post_data) || $_SESSION['session_token'] != $post_data['csrf_token']){
+			redirect404();			
+			return false;
+		}
+		return true;
+	}
 
 	function get_valid_post_data(){
 		return $this->valid_post_data;

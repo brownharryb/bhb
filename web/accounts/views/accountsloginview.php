@@ -15,9 +15,13 @@ class AccountsLoginView extends \BaseViews
 
 
 	function login(){
+		$post_data = $_POST;
 		require_once get_forms_directory("accounts").$this->form_file_name;
 		$form_class = new LoginForm();
-		$form = $form_class->get_fields_form();
+		$form = $form_class->get_form();
+		if($post_data!=array()){
+			$form = $form_class->form_is_valid($post_data);
+		}
 		$this->render_view($this->login_template,array('page_title'=>'login',"form"=>$form));
 	}
 }

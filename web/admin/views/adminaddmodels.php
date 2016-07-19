@@ -15,8 +15,8 @@ class AdminAddModels extends \AdminView
 	}
 
 	function modelsAdd(){
-		require_once __DIR__.'/../forms/adminaddform.php';
-		$form_class = new AdminAddForm;
+		// require_once get_forms_directory("admin").'adminaddform.php';
+		// $form_class = new AdminAddForm;
 		$post_data = $_POST;
 		try{
 			
@@ -33,12 +33,13 @@ class AdminAddModels extends \AdminView
 			if($model==''){
 				redirect404();
 			}else{
-				$form_class->set_model($model);
+				require_once get_forms_directory("admin").'adminaddform.php';
+				$form_class = new AdminAddForm($model);
 				$form = $form_class->get_admin_form();
 				if($post_data!=[]){  //form is bound
 					// check valid form
-					$form= $form_class->validate_admin_data_on_form($form,$post_data);
-					if($form==""){//form is valid
+					$form= $form_class->validate_admin_data_on_form($post_data);
+					if($form=="ok"){//form is valid
 						$this->addDataToDatabase($form_class->get_valid_post_data());
 						return;
 					}
